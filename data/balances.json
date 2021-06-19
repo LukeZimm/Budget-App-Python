@@ -1,0 +1,11 @@
+{
+    "Total": 1000.0,
+    "Bin Names": [
+        "Spending",
+        "Saving"
+    ],
+    "Bin Totals": [
+        200.0,
+        800.0
+    ]
+}
