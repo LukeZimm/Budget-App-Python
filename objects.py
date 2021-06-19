@@ -15,7 +15,7 @@ class Ticket:
 
     def output(self):
         #time = f"{self.date.month}/{self.date.day}/{self.date.year} {self.date.hour}:{self.date.minute}"
-        time = self.date.strftime("%d/%m/%Y %H:%M:%S")
+        time = self.date.strftime("%m/%d/%Y %H:%M:%S")
         bins = ""
         for x in range(len(self.l_names)):
             bins+=f" {self.l_names[x]}: ${self.l_totals[x]}"
