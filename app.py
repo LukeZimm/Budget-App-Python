@@ -45,22 +45,39 @@ def select_bin():
     return bin
 
 
-def deposit(): # Create a deposit Ticket and append it
+def deposit(args, modifiers): # Create a deposit Ticket and append it
+    print(args)
+    print(modifiers)
     global b
     global h
     global v
-    i = input("total: ").lower() # Get Total from User
-    if i == "quit": # cancel ticket
-        print("Ticket Canceled")
-        return
-    total=float(i)
-    l_names=b["Bin Names"] # Get Bin Names from data files
-    mults = v["Deposit"]["Multipliers"] # Get multipliers from data files
+    l_totals = []
+    if (len(args) > 0): # if 1 argument was passed assume value for total
+        total = float(args[0])
+    else: # otherwise get input for total
+        i = input("total: ").lower() # Get Total from User
+        if i == "quit": # cancel ticket
+            print("Ticket Canceled")
+            return
+        total=float(i)
+    if (len(args) > 1): # if more arguments were passed assume value for mults
+        if (len(modifiers) > 0): # if any -'char' modifiers were passed
+            if (modifiers[0] == "-d"): # if -d was passed switch from percents to dollars
+                for x in range(1,len(args)): # update l_totals
+                    l_totals.append(float(args[x]))
+            else: # if no -d modifier assume percentages
+                for x in range(1,len(args)):
+                    l_totals.append(total*float(args[x])/100) # update l_totals
+        else:  # if no modifier assume percentages
+            for x in range(1,len(args)):
+                l_totals.append(total*float(args[x])/100) # update l_totals
 
     while (True): # Loop until ticket looks good and break
-        l_totals=[]
-        for x in range(len(mults)): # Apply multipliers
-            l_totals.append(total*mults[x])
+        l_names=b["Bin Names"] # Get Bin Names from data files
+        if (len(l_totals) == 0) :
+            mults = v["Deposit"]["Multipliers"] # Get multipliers from data files
+            for x in range(len(mults)): # Apply multipliers
+                l_totals.append(total*mults[x])
         t=Ticket("Deposit",total,l_names,l_totals) # Create Ticket
         preview = t.output()
         print("\nPreview:\n"+preview) # Preview
@@ -177,17 +194,29 @@ def purchase(): # Create a purchase ticket and append it
                 
 
 def loop():
-    global d
+    global b
     global h
+    global v
     condition = True
     while (condition):
         i = input(">").lower()
-        if i == "quit":
+        i = i.split(" ") # change i to list of arguments
+        if i[0] == "quit":
             condition = False
             break
-        if i == "deposit":
-            deposit()
-        if i == "purchase":
+        if i[0] == "deposit": # wish to deposit
+            if len(i) == 1: # if input is simply "deposit"
+                deposit([],[])
+            else: # if input is "deposit x y z"
+                args=[]
+                modifiers=[]
+                for x in range(1,len(i)): # get args and -'char' modifiers
+                    if i[x][0] == "-":
+                        modifiers.append(i[x])
+                    else:
+                        args.append(i[x])
+                deposit(args,modifiers) 
+        if i[0] == "purchase":
             purchase()
 
 
