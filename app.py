@@ -46,12 +46,11 @@ def select_bin():
 
 
 def deposit(args, modifiers): # Create a deposit Ticket and append it
-    print(args)
-    print(modifiers)
     global b
     global h
     global v
     l_totals = []
+    # Get Total
     if (len(args) > 0): # if 1 argument was passed assume value for total
         total = float(args[0])
     else: # otherwise get input for total
@@ -60,6 +59,8 @@ def deposit(args, modifiers): # Create a deposit Ticket and append it
             print("Ticket Canceled")
             return
         total=float(i)
+
+    # Get Mults
     if (len(args) > 1): # if more arguments were passed assume value for mults
         if (len(modifiers) > 0): # if any -'char' modifiers were passed
             if (modifiers[0] == "-d"): # if -d was passed switch from percents to dollars
@@ -168,20 +169,29 @@ def deposit(args, modifiers): # Create a deposit Ticket and append it
                     break # succeessfully got through so break loop
 
 
-def purchase(): # Create a purchase ticket and append it
+def purchase(args, modifiers): # Create a purchase ticket and append it
     global b
     global h
     global v
-    i = input("total: ").lower() # Get Total from User
-    if i == "quit": # cancel ticket
-        print("Ticket Canceled")
-        return
-    total=float(i)
+    # get total
+    if (len(args) > 0): # if 1 argument was passed assume value for total
+        total = float(args[0])
+    else: # otherwise get input for total
+        i = input("total: ").lower() # Get Total from User
+        if i == "quit": # cancel ticket
+            print("Ticket Canceled")
+            return
+        total=float(i)
+    
+    # get bin selection
     l_names=b["Bin Names"] # Get Bin Names from data files
-    bin = select_bin() # run function to get bin from user
-    if (bin == -2): # user chose to quit
-        print("Ticket Canceled")
-        return
+    if (len(args) > 1): # if more arguments were passed assume bin selection
+        bin=int(args[1])-1
+    else:
+        bin = select_bin() # run function to get bin from user
+        if (bin == -2): # user chose to quit
+            print("Ticket Canceled")
+            return
 
     while (True): # Loop until ticket looks good and break
         l_totals=[0]*len(l_names) # create list with len(total bins) size
@@ -189,7 +199,7 @@ def purchase(): # Create a purchase ticket and append it
         t=Ticket("Purchase",-total,l_names,l_totals) # Create Ticket
         preview = t.output()
         print("\nPreview:\n"+preview) # Preview
-        i = input("If preview is good 'enter', else 'any key'").lower() # Ask user if Ticket looks good
+        i = input("If preview is good 'enter', else 'any key': ").lower() # Ask user if Ticket looks good
         if i == "quit": # cancel ticket
             print("Ticket Canceled")
             return
@@ -245,7 +255,17 @@ def loop():
                         args.append(i[x])
                 deposit(args,modifiers) 
         if i[0] == "purchase":
-            purchase()
+            if len(i) == 1: # if input is simply "purchase"
+                purchase([],[])
+            else: # if input is "purchase x y z"
+                args=[]
+                modifiers=[]
+                for x in range(1,len(i)): # get args and -'char' modifiers
+                    if i[x][0] == "-":
+                        modifiers.append(i[x])
+                    else:
+                        args.append(i[x])
+                purchase(args,modifiers) 
 
 
 if __name__ == "__main__":
