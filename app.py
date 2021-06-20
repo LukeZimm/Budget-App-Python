@@ -94,10 +94,10 @@ def deposit(args, modifiers): # Create a deposit Ticket and append it
             sum+=l_totals[x]
             mults_total+=l_mults[x]
         remaining = total-sum
+    mults = v["Deposit"]["Multipliers"] # Get multipliers from data files
 
     while (True): # Loop until ticket looks good and break
         l_names=b["Bin Names"] # Get Bin Names from data files
-        mults = v["Deposit"]["Multipliers"] # Get multipliers from data files
         if (len(l_totals) < len(mults)) :
             for x in range(len(l_totals),len(mults)): # Apply multipliers
                 l_totals.append((total-sum)*(mults[x]/(1-mults_total)))
@@ -127,6 +127,8 @@ def deposit(args, modifiers): # Create a deposit Ticket and append it
                 if i == "quit": # cancel ticket
                     print("Ticket Canceled")
                     return
+                l_totals=[]
+                mults_total=0
                 total=float(i)
 
             elif (i == "2") or (i == "percentages"): # User wishes to change percentages
@@ -161,6 +163,8 @@ def deposit(args, modifiers): # Create a deposit Ticket and append it
                     elif (i == "y") or (i == "yes"): # save percentages to file
                         v["Deposit"]["Multipliers"] = l_percents
                     mults=l_percents # save percentages to variable
+                    l_totals=[]
+                    mults_total=0
                     break # succeessfully got through so break loop
 
 
