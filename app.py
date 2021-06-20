@@ -63,25 +63,48 @@ def deposit(args, modifiers): # Create a deposit Ticket and append it
     if (len(args) > 1): # if more arguments were passed assume value for mults
         if (len(modifiers) > 0): # if any -'char' modifiers were passed
             if (modifiers[0] == "-d"): # if -d was passed switch from percents to dollars
+                sum=0
                 for x in range(1,len(args)): # update l_totals
                     l_totals.append(float(args[x]))
+                    sum+=float(args[x])
+                if (sum > total): # check if args sum to total
+                    print("Bin Totals did not sum up to total")
+                    return
             else: # if no -d modifier assume percentages
+                sum=0
                 for x in range(1,len(args)):
                     l_totals.append(total*float(args[x])/100) # update l_totals
+                    sum+=float(args[x])
+                if (sum > 1): # check if args sum to total
+                    print("Bin percentages did not sum up to 100%")
+                    return
         else:  # if no modifier assume percentages
+            sum=0
             for x in range(1,len(args)):
                 l_totals.append(total*float(args[x])/100) # update l_totals
+                sum+=float(args[x])/100
+            if (sum > 1): # check if args sum to total
+                print("Bin percentages did not sum up to 100%")
+                return
+    l_mults = v["Deposit"]["Multipliers"]
+    if (len(args) < 1+len(l_mults)): # if user did not provide all bin prep next function for assuming the rest
+        sum=0
+        mults_total=0
+        for x in range(len(l_totals)): # get current total
+            sum+=l_totals[x]
+            mults_total+=l_mults[x]
+        remaining = total-sum
 
     while (True): # Loop until ticket looks good and break
         l_names=b["Bin Names"] # Get Bin Names from data files
-        if (len(l_totals) == 0) :
-            mults = v["Deposit"]["Multipliers"] # Get multipliers from data files
-            for x in range(len(mults)): # Apply multipliers
-                l_totals.append(total*mults[x])
+        mults = v["Deposit"]["Multipliers"] # Get multipliers from data files
+        if (len(l_totals) < len(mults)) :
+            for x in range(len(l_totals),len(mults)): # Apply multipliers
+                l_totals.append((total-sum)*(mults[x]/(1-mults_total)))
         t=Ticket("Deposit",total,l_names,l_totals) # Create Ticket
         preview = t.output()
         print("\nPreview:\n"+preview) # Preview
-        i = input("If preview is good 'enter', else 'any key'").lower() # Ask user if Ticket looks good
+        i = input("If preview is good 'enter', else 'any key': ").lower() # Ask user if Ticket looks good
         if i == "quit": # cancel ticket
             print("Ticket Canceled")
             return
@@ -107,6 +130,7 @@ def deposit(args, modifiers): # Create a deposit Ticket and append it
                 total=float(i)
 
             elif (i == "2") or (i == "percentages"): # User wishes to change percentages
+                
                 while (True): # Loop until user gets percentages totaling up to 100%
                     for x in range(len(l_names)): # Print current percentages
                         print(f"{l_names[x]}: {mults[x]*100}%")
