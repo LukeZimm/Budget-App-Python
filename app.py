@@ -13,7 +13,7 @@ def init():
     b,h,v=save.load()
     print("Loaded")
 
-def select_bin():
+def select_bin(text="Select Bin"):
     global b
     l_names=b["Bin Names"] # Get Bin Names from data files
     l_totals=b["Bin Totals"] # Get Bin Totals from data files
@@ -21,7 +21,7 @@ def select_bin():
         print()
         for x in range(len(l_names)): # print all bin names
             print(f"{l_names[x]}: ${l_totals[x]}")
-        i = input(f"Select Bin (1-{len(l_names)} or name): ").lower() # prompt user to input number from 1 to len(bin) or bin name
+        i = input(f"{text} (1-{len(l_names)} or name): ").lower() # prompt user to input number from 1 to len(bin) or bin name
         if i == "quit": # pass cancel ticket request up
             return -2
         bin = -1 # default to bin -1 (doesnt exist)
@@ -43,7 +43,6 @@ def select_bin():
         break # if bin selected break
     print(f"{l_names[bin]} Bin Selected") # show user selected bin
     return bin
-
 
 def deposit(args, modifiers): # Create a deposit Ticket and append it
     global b
@@ -168,7 +167,6 @@ def deposit(args, modifiers): # Create a deposit Ticket and append it
                     mults_total=0
                     break # succeessfully got through so break loop
 
-
 def purchase(args, modifiers): # Create a purchase ticket and append it
     global b
     global h
@@ -230,6 +228,85 @@ def purchase(args, modifiers): # Create a purchase ticket and append it
                     print("Ticket Canceled")
                     return
                 
+def transfer(args):
+    global b
+    global h
+    global v
+    # get source and deposit bin
+    bin_source = -1
+    bin_deposit = -1
+    bins=b["Bin Totals"]
+    if (len(args) == 0): # input required from user
+        bin_source = select_bin(text="Select Source Bin")
+        bin_deposit = select_bin(text="Select Deposit Bin")
+    elif (len(args) == 1): # interpret args to get source bin and get deposit bin from user
+        bin_source = int(args[0])-1
+        bin_deposit = select_bin(text="Select Deposit Bin")
+    elif (len(args) > 1): # interpret args to get source and deposit bin
+        bin_source = int(args[0])-1
+        bin_deposit = int(args[1])-1
+
+    # get amount
+    if (len(args) < 3): # input required from user
+        i = input("Total: ")
+        if i == "quit": # cancel ticket
+            print("Ticket Canceled")
+            return
+        else: total = float(i)
+    else: # interpret args to get total
+        total = float(args[2])
+
+    while (True): # loop until user is satisfied and break
+        # Display Transfer
+        print("\nSource bin: "+b["Bin Names"][bin_source]+" $"+str(bins[bin_source]))
+        print("Deposit bin: "+b["Bin Names"][bin_deposit]+" $"+str(bins[bin_deposit]))
+        print(f"Total: ${total}")
+        l_totals=[0]*len(bins)
+        for x in range(len(bins)): # create l_totals 
+            if x == bin_source: l_totals[x]=-total
+            elif x == bin_deposit: l_totals[x]=total
+        t=Ticket("Transfer",0,b["Bin Names"],l_totals)
+        print(t.output())
+        i = input("Enter to confirm, any key to change: ")
+        if (i == "quit"): # cancel ticket
+            print("Ticket Canceled")
+            return
+        elif (i == ""): # append ticket
+            t.append(b, h, v)
+            print("Ticket Appended")
+            save.write([b,h,v])
+            break
+        else: # user wishes to change ticket
+            i = input("Change total (1) or bins (2): ").lower()
+            print()
+            if i == "quit": # cancel ticket
+                print("Ticket Canceled")
+                return
+
+            elif (i == "1") or (i == "total"): # User wishes to change total
+                i = input("total: ").lower() # Get New Total from User
+                if i == "quit": # cancel ticket
+                    print("Ticket Canceled")
+                    return
+                l_totals=[]
+                total=float(i)
+
+            elif (i == "2") or (i == "bins"): # User wishes to change percentages
+                bin_source = select_bin(text="Select Source Bin")
+                bin_deposit = select_bin(text="Select Deposit Bin")
+
+def view():
+    global b
+    global h
+    global v
+    bin_names = b["Bin Names"] # Get bin names
+    bin_totals = b["Bin Totals"] # Get bin totals
+    total = b["Total"] # Get total
+    print(f"Total: ${total}") # print total
+    for x in range(len(b["Bin Names"])): # print bin totals
+        print(f"{bin_names[x]}: ${bin_totals[x]}")
+    print() # line break
+
 
 def loop():
     global b
@@ -242,7 +319,8 @@ def loop():
         if i[0] == "quit":
             condition = False
             break
-        if i[0] == "deposit": # wish to deposit
+
+        elif i[0] == "deposit": # wish to deposit
             if len(i) == 1: # if input is simply "deposit"
                 deposit([],[])
             else: # if input is "deposit x y z"
@@ -254,7 +332,8 @@ def loop():
                     else:
                         args.append(i[x])
                 deposit(args,modifiers) 
-        if i[0] == "purchase":
+
+        elif i[0] == "purchase":
             if len(i) == 1: # if input is simply "purchase"
                 purchase([],[])
             else: # if input is "purchase x y z"
@@ -267,6 +346,17 @@ def loop():
                         args.append(i[x])
                 purchase(args,modifiers) 
 
+        elif (i[0] == "view") or (i[0] == "totals") or (i[0] == "bins"):
+            view()
+        
+        elif (i[0] == "transfer"):
+            if len(i) == 1: # if input is simply "transfer"
+                transfer([])
+            else: # if input is "transfer x y z"
+                args=[]
+                for x in range(1,len(i)):
+                    args.append(i[x])
+                transfer(args)
 
 if __name__ == "__main__":
     init()

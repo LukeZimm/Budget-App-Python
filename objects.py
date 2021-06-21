@@ -27,7 +27,7 @@ class Ticket:
             b["Bin Totals"][x]+=self.l_totals[x]
         ticket_number = h["Total"] # Get Ticket Number
         h["Total"] = ticket_number+1 # Update Total Tickets
-        h[str(ticket_number)] = [self.t_type,self.date.strftime("%d/%m/%Y %H:%M:%S"),self.total,self.l_totals] # Add Ticket to History file
+        h[str(ticket_number)] = [self.t_type,self.date.strftime("%m/%d/%Y %H:%M:%S"),self.total,self.l_totals] # Add Ticket to History file
         return b,h,v
 
     #def 
