@@ -127,6 +127,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# other
 /Projects
 /App-Python
 /.vscode
